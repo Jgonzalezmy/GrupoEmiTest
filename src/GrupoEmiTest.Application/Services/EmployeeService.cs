@@ -1,8 +1,10 @@
 ﻿using GrupoEmiTest.Application.DTOs.Request;
 using GrupoEmiTest.Application.DTOs.Response;
+using GrupoEmiTest.Application.Extensions;
 using GrupoEmiTest.Application.Interfaces;
 using GrupoEmiTest.Domain.Common;
 using GrupoEmiTest.Domain.Entities;
+using GrupoEmiTest.Domain.Enums;
 using GrupoEmiTest.Domain.Interfaces;
 
 namespace GrupoEmiTest.Application.Services;
@@ -26,46 +28,34 @@ public sealed class EmployeeService : IEmployeeService
     }
 
     /// <inheritdoc/>
-    public async Task<Result<IReadOnlyList<EmployeeResponse>>> GetAllAsync()
+    public async Task<Result<PagedResult<EmployeeResponse>>> GetAllAsync(
+        PageRequest request, CancellationToken cancellationToken)
     {
-        var employees = await _unitOfWork.Employees.GetAllWithDepartmentAsync();
+        var page = await _unitOfWork.Employees.GetAllWithDetailsAsync(request, cancellationToken);
 
-        var response = employees
-            .Select(e => new EmployeeResponse
-            {
-                Id = e.Id,
-                Name = e.Name,
-                CurrentPosition = e.CurrentPosition,
-                DepartmentName = e.Department.Name,
-                Salary = e.Salary,
-                YearlyBonus = e.CalculateYearlyBonus()
-            })
+        IReadOnlyList<EmployeeResponse> data = page.Data
+            .Select(e => e.ToResponse())
             .ToList()
             .AsReadOnly();
 
-        return Result<IReadOnlyList<EmployeeResponse>>.Success(response);
+        return Result.Success(new PagedResult<EmployeeResponse>(data, page.NextCursor, page.HasNextPage));
     }
 
     /// <inheritdoc/>
-    public async Task<Result<EmployeeDetailResponse>> GetByIdAsync(int id)
+    public async Task<Result<EmployeeResponse>> GetByIdAsync(int id)
     {
         var employee = await _unitOfWork.Employees.GetByIdWithDetailsAsync(id);
 
         if (employee is null)
-            return Result<EmployeeDetailResponse>.Failure($"Employee with ID {id} was not found.");
+            return Result.Failure<EmployeeResponse>(
+                new Error("Employee.NotFound", $"Employee with ID {id} was not found.", ErrorType.NotFound));
 
-        return Result<EmployeeDetailResponse>.Success(MapToDetailResponse(employee));
+        return Result.Success(employee.ToResponse());
     }
 
     /// <inheritdoc/>
-    public async Task<Result<EmployeeDetailResponse>> CreateAsync(CreateEmployeeRequest request)
+    public async Task<Result<EmployeeResponse>> CreateAsync(EmployeeRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Name))
-            return Result<EmployeeDetailResponse>.Failure("Employee name is required.");
-
-        if (request.Salary <= 0)
-            return Result<EmployeeDetailResponse>.Failure("Salary must be greater than zero.");
-
         var employee = new Employee
         {
             Name = request.Name,
@@ -77,24 +67,17 @@ public sealed class EmployeeService : IEmployeeService
         await _unitOfWork.Employees.AddAsync(employee);
         await _unitOfWork.SaveChangesAsync();
 
-        // Reload with related data for the response.
-        var created = await _unitOfWork.Employees.GetByIdWithDetailsAsync(employee.Id);
-        return Result<EmployeeDetailResponse>.Success(MapToDetailResponse(created!));
+        return Result.Success(employee.ToResponse());
     }
 
     /// <inheritdoc/>
-    public async Task<Result<EmployeeDetailResponse>> UpdateAsync(int id, UpdateEmployeeRequest request)
+    public async Task<Result<EmployeeResponse>> UpdateAsync(int id, EmployeeRequest request)
     {
-        var employee = await _unitOfWork.Employees.GetByIdAsync(id);
+        var employee = await _unitOfWork.Employees.GetByIdWithDetailsAsync(id);
 
         if (employee is null)
-            return Result<EmployeeDetailResponse>.Failure($"Employee with ID {id} was not found.");
-
-        if (string.IsNullOrWhiteSpace(request.Name))
-            return Result<EmployeeDetailResponse>.Failure("Employee name is required.");
-
-        if (request.Salary <= 0)
-            return Result<EmployeeDetailResponse>.Failure("Salary must be greater than zero.");
+            return Result.Failure<EmployeeResponse>(
+                new Error("Employee.NotFound", $"Employee with ID {id} was not found.", ErrorType.NotFound));
 
         employee.Name = request.Name;
         employee.CurrentPosition = request.CurrentPosition;
@@ -104,8 +87,7 @@ public sealed class EmployeeService : IEmployeeService
         _unitOfWork.Employees.Update(employee);
         await _unitOfWork.SaveChangesAsync();
 
-        var updated = await _unitOfWork.Employees.GetByIdWithDetailsAsync(employee.Id);
-        return Result<EmployeeDetailResponse>.Success(MapToDetailResponse(updated!));
+        return Result.Success(employee.ToResponse());
     }
 
     /// <inheritdoc/>
@@ -114,41 +96,12 @@ public sealed class EmployeeService : IEmployeeService
         var employee = await _unitOfWork.Employees.GetByIdAsync(id);
 
         if (employee is null)
-            return Result.Failure($"Employee with ID {id} was not found.");
+            return Result.Failure(
+                new Error("Employee.NotFound", $"Employee with ID {id} was not found.", ErrorType.NotFound));
 
         _unitOfWork.Employees.Delete(employee);
         await _unitOfWork.SaveChangesAsync();
 
         return Result.Success();
     }
-
-    // ── Private helpers ──────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Maps an <see cref="Employee"/> entity (with related data loaded) to a
-    /// <see cref="EmployeeDetailResponse"/> DTO.
-    /// </summary>
-    /// <param name="employee">The entity to map.</param>
-    /// <returns>The populated DTO.</returns>
-    private static EmployeeDetailResponse MapToDetailResponse(Employee employee) => new()
-    {
-        Id = employee.Id,
-        Name = employee.Name,
-        CurrentPosition = employee.CurrentPosition,
-        Salary = employee.Salary,
-        YearlyBonus = employee.CalculateYearlyBonus(),
-        DepartmentId = employee.DepartmentId,
-        DepartmentName = employee.Department?.Name ?? string.Empty,
-        PositionHistories = employee.PositionHistories
-            .Select(ph => new PositionHistoryResponse
-            {
-                Position = ph.Position,
-                StartDate = ph.StartDate,
-                EndDate = ph.EndDate
-            })
-            .ToList(),
-        Projects = employee.EmployeeProjects
-            .Select(ep => ep.Project.Name)
-            .ToList()
-    };
 }

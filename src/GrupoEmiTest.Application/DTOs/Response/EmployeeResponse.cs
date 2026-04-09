@@ -11,11 +11,15 @@ namespace GrupoEmiTest.Application.DTOs.Response;
 /// <param name="DepartmentName">The name of the department the employee belongs to.</param>
 /// <param name="Salary">The base salary of the employee.</param>
 /// <param name="YearlyBonus">The yearly bonus amount assigned to the employee.</param>
+/// <param name="PositionHistories">The collection of historical positions held by the employee.</param>
+/// <param name="EmployeeProjects">The collection of projects the employee is currently assigned to.</param>
 public record EmployeeResponse(
     int Id,
     string Name,
     PositionType CurrentPosition,
     string DepartmentName,
     decimal Salary,
-    decimal YearlyBonus
+    decimal YearlyBonus,
+    ICollection<PositionHistoryResponse> PositionHistories,
+    ICollection<EmployeeProjectResponse> EmployeeProjects
     );

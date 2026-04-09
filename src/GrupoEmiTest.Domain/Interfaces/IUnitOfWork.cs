@@ -9,14 +9,24 @@ namespace GrupoEmiTest.Domain.Interfaces;
 public interface IUnitOfWork : IDisposable
 {
     /// <summary>Gets the employee repository.</summary>
-    //IEmployeeRepository Employees { get; }
+    IEmployeeRepository Employees { get; }
 
     /// <summary>Gets the generic repository for <see cref="ApplicationUser"/>.</summary>
     IRepository<ApplicationUser> Users { get; }
 
+    /// <summary>Begins an explicit database transaction.</summary>
+    Task BeginTransactionAsync();
+
     /// <summary>
-    /// Persists all pending changes tracked by the underlying context to the database.
+    /// Flushes all pending changes to the database within the current transaction,
+    /// without committing it yet.
     /// </summary>
     /// <returns>A task that resolves to the number of state entries written.</returns>
     Task<int> SaveChangesAsync();
+
+    /// <summary>Commits the current transaction, making all changes permanent.</summary>
+    Task CommitAsync();
+
+    /// <summary>Rolls back the current transaction, discarding all changes.</summary>
+    Task RollbackAsync();
 }

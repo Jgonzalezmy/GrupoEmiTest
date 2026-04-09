@@ -10,46 +10,39 @@ namespace GrupoEmiTest.Application.Interfaces;
 public interface IEmployeeService
 {
     /// <summary>
-    /// Retrieves all employees with their department information.
+    /// Returns a keyset-paginated page of employees with full related data.
     /// </summary>
-    /// <returns>A result containing a read-only list of <see cref="EmployeeResponse"/>.</returns>
-    Task<Result<IReadOnlyList<EmployeeResponse>>> GetAllAsync();
+    /// <param name="request">The pagination parameters (page size and optional last-seen ID cursor).</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A result containing a <see cref="PagedResult{T}"/> with the current page and next-cursor.</returns>
+    Task<Result<PagedResult<EmployeeResponse>>> GetAllAsync(PageRequest request, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Retrieves a single employee by ID including position history and projects.
+    /// Retrieves a single employee by ID including department, position history, and projects.
     /// </summary>
     /// <param name="id">The employee's primary key.</param>
-    /// <returns>
-    /// A result containing <see cref="EmployeeResponse"/> if found,
-    /// or a failure if no employee with that ID exists.
-    /// </returns>
+    /// <returns>A result containing the <see cref="EmployeeResponse"/>, or a not-found failure.</returns>
     Task<Result<EmployeeResponse>> GetByIdAsync(int id);
 
     /// <summary>
     /// Creates a new employee from the provided request data.
     /// </summary>
     /// <param name="request">The data required to create the employee.</param>
-    /// <returns>
-    /// A result containing the created <see cref="EmployeeResponse"/>,
-    /// or a failure if validation fails.
-    /// </returns>
+    /// <returns>A result containing the newly created <see cref="EmployeeResponse"/>.</returns>
     Task<Result<EmployeeResponse>> CreateAsync(EmployeeRequest request);
 
     /// <summary>
-    /// Updates an existing employee with the provided request data.
+    /// Updates an existing employee identified by <paramref name="id"/>.
     /// </summary>
-    /// <param name="id">The ID of the employee to update.</param>
+    /// <param name="id">The employee's primary key.</param>
     /// <param name="request">The updated employee data.</param>
-    /// <returns>
-    /// A result containing the updated <see cref="EmployeeResponse"/>,
-    /// or a failure if the employee is not found.
-    /// </returns>
+    /// <returns>A result containing the updated <see cref="EmployeeResponse"/>, or a not-found failure.</returns>
     Task<Result<EmployeeResponse>> UpdateAsync(int id, EmployeeRequest request);
 
     /// <summary>
-    /// Deletes the employee with the given ID.
+    /// Deletes an employee by ID.
     /// </summary>
-    /// <param name="id">The ID of the employee to delete.</param>
-    /// <returns>A successful result, or a failure if the employee is not found.</returns>
+    /// <param name="id">The employee's primary key.</param>
+    /// <returns>A result indicating success, or a not-found failure.</returns>
     Task<Result> DeleteAsync(int id);
 }
