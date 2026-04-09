@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GrupoEmiTest.Application\GrupoEmiTest.Application.csproj" />
+  </ItemGroup>
+
 </Project>
