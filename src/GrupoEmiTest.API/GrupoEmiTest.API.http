@@ -1,0 +1,6 @@
+@GrupoEmiTest.API_HostAddress = http://localhost:5151
+
+GET {{GrupoEmiTest.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

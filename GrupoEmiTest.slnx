@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GrupoEmiTest.API/GrupoEmiTest.API.csproj" />
+    <Project Path="src/GrupoEmiTest.Application/GrupoEmiTest.Application.csproj" />
+    <Project Path="src/GrupoEmiTest.Domain/GrupoEmiTest.Domain.csproj" />
+    <Project Path="src/GrupoEmiTest.Infrastructure/GrupoEmiTest.Infrastructure.csproj" />
+  </Folder>
+</Solution>
