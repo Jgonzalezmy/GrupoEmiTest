@@ -1,6 +1,20 @@
 services:
-  grupoemitest.api:
-    image: ${DOCKER_REGISTRY-}grupoemitestapi
+  test.sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    networks:
+      - grupoemitest-network
+
+  test.api:
+    image: ${DOCKER_REGISTRY-}grupoemitest-api
     build:
       context: .
       dockerfile: src/GrupoEmiTest.API/Dockerfile
+    networks:
+      - grupoemitest-network
+
+volumes:
+  sqlserver-data:
+
+networks:
+  grupoemitest-network:
+    driver: bridge

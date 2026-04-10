@@ -1,6 +1,7 @@
 ﻿using GrupoEmiTest.Domain.Entities;
 using GrupoEmiTest.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace GrupoEmiTest.Infrastructure.Persistence;
 

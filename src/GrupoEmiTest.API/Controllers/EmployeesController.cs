@@ -136,7 +136,7 @@ public sealed class EmployeesController : ControllerBase
     /// <c>200 OK</c> with a <see cref="PagedResult{T}"/> containing employees and pagination metadata.<br/>
     /// <c>400 Bad Request</c> if <paramref name="departmentIdRequest"/> is invalid.
     /// </returns>
-    [HttpGet("by-department/{departmentId:int}")]
+    [HttpGet("by-department/{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetByDepartment(

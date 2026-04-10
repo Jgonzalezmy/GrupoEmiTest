@@ -25,11 +25,14 @@ public class Program
         await app.InitialiseDatabaseAsync();
 
         // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())        
+        if (app.Environment.IsDevelopment())
+        {
             app.MapOpenApi();
+            app.MapScalarApiReference();
+        }
 
-        app.MapScalarApiReference();
-        app.UseHttpsRedirection();
+        if (!app.Environment.IsDevelopment())
+            app.UseHttpsRedirection();
 
         app.UseAuthorization();
 

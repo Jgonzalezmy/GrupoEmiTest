@@ -1,6 +1,8 @@
-﻿using GrupoEmiTest.Domain.Interfaces;
+﻿using GrupoEmiTest.Application.Interfaces;
+using GrupoEmiTest.Domain.Interfaces;
 using GrupoEmiTest.Infrastructure.Persistence;
 using GrupoEmiTest.Infrastructure.Repositories;
+using GrupoEmiTest.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +21,8 @@ public static class DependencyInjectionInfrastructure
         services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<IPositionHistoryRepository, PositionHistoryRepository>();
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<DataSeeder>();
 
         return services;
