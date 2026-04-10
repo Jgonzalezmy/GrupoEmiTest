@@ -19,6 +19,9 @@ public enum ErrorType
     NotFound = 3,
 
     /// <summary>The operation conflicts with the current state of the resource.</summary>
-    Conflict = 4
+    Conflict = 4,
+
+    /// <summary>The caller is not authenticated or the credentials are invalid.</summary>
+    Unauthorized = 5
 }
 

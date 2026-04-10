@@ -1,4 +1,5 @@
-﻿using GrupoEmiTest.Application.DTOs.Request;
+﻿using GrupoEmiTest.API.Extensions;
+using GrupoEmiTest.Application.DTOs.Request;
 using GrupoEmiTest.Application.Interfaces;
 
 using Microsoft.AspNetCore.Mvc;
@@ -35,12 +36,13 @@ public sealed class AuthController : ControllerBase
     [HttpPost("register")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken = default)
     {
-        var result = await _authService.RegisterAsync(request);
+        var result = await _authService.RegisterAsync(request, cancellationToken);
 
         if (result.IsFailure)
-            return BadRequest(new { error = result.Error });
+            return result.ToProblemResult(this);
 
         return CreatedAtAction(nameof(Register), result.Value);
     }
@@ -56,12 +58,12 @@ public sealed class AuthController : ControllerBase
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken = default)
     {
-        var result = await _authService.LoginAsync(request);
+        var result = await _authService.LoginAsync(request, cancellationToken);
 
         if (result.IsFailure)
-            return Unauthorized(new { error = result.Error });
+            return result.ToProblemResult(this);
 
         return Ok(result.Value);
     }

@@ -1,7 +1,7 @@
-﻿using GrupoEmiTest.Domain.Entities;
+﻿using GrupoEmiTest.Application.Interfaces;
+using GrupoEmiTest.Domain.Entities;
 using GrupoEmiTest.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace GrupoEmiTest.Infrastructure.Data;
 
@@ -9,7 +9,7 @@ namespace GrupoEmiTest.Infrastructure.Data;
 /// Handles initial data seeding for the application database.
 /// Seeding is skipped when the Employees table already contains records (idempotent).
 /// </summary>
-public sealed class DataSeeder(GrupoEmiTestDBContext context)
+public sealed class DataSeeder(GrupoEmiTestDBContext context, IPasswordHasher passwordHasher)
 {
     /// <summary>
     /// Applies pending migrations and seeds initial data if the database is empty.
@@ -17,6 +17,13 @@ public sealed class DataSeeder(GrupoEmiTestDBContext context)
     public async Task SeedAsync()
     {
         await context.Database.MigrateAsync();
+
+        if (!await context.User.AnyAsync())
+        {
+            var users = BuildUsers();
+            await context.User.AddRangeAsync(users);
+            await context.SaveChangesAsync();
+        }
 
         if (await context.Employee.AnyAsync())
             return;
@@ -33,6 +40,20 @@ public sealed class DataSeeder(GrupoEmiTestDBContext context)
         await context.Employee.AddRangeAsync(employees);
         await context.SaveChangesAsync();
     }
+
+    private List<ApplicationUser> BuildUsers() =>
+    [
+        ApplicationUser.Create(
+            username:     "admin.grupoemi",
+            email:        "admin@grupoemi.com",
+            passwordHash: passwordHasher.Hash("GrupoEmi2026!"),
+            role:         RoleType.Admin),
+        ApplicationUser.Create(
+            username:     "user.grupoemi",
+            email:        "user@grupoemi.com",
+            passwordHash: passwordHasher.Hash("GrupoEmi2026!"),
+            role:         RoleType.User)
+    ];
 
     private static List<Department> BuildDepartments() =>
     [
@@ -63,8 +84,8 @@ public sealed class DataSeeder(GrupoEmiTestDBContext context)
     private static List<Employee> BuildEmployees(List<Department> departments, List<Project> projects)
     {
         var engineering = departments[0];
-        var marketing   = departments[1];
-        var hr          = departments[2];
+        var marketing = departments[1];
+        var hr = departments[2];
 
         var erp = projects[0];
         var dmp = projects[1];

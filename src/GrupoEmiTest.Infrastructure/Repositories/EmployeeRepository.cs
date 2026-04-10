@@ -19,22 +19,20 @@ public sealed class EmployeeRepository : Repository<Employee>, IEmployeeReposito
     public EmployeeRepository(GrupoEmiTestDBContext context) : base(context) { }
 
     /// <inheritdoc/>
-    public async Task<Employee?> GetByIdWithDetailsAsync(int id)
+    public async Task<Employee?> GetByIdWithDetailsAsync(int id, CancellationToken cancellationToken = default)
         => await _dbSet
             .AsNoTracking()
             .Include(e => e.Department)
             .Include(e => e.PositionHistories)
             .Include(e => e.EmployeeProjects)
                 .ThenInclude(ep => ep.Project)
-            .FirstOrDefaultAsync(e => e.Id == id);
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
     /// <inheritdoc/>
     public async Task<PagedResult<Employee>> GetAllWithDetailsAsync(
         PageRequest request,
         CancellationToken cancellationToken)
     {
-        // Fetch pageSize + 1 to detect the existence of a next page
-        // without a separate COUNT(*) round-trip.
         var items = await _dbSet
             .AsNoTracking()
             .AsSplitQuery()

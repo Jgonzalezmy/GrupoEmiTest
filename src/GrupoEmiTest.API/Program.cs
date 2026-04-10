@@ -1,4 +1,4 @@
-using GrupoEmiTest.API.Middleware.Extensions;
+using GrupoEmiTest.API.Middlewares.Extensions;
 using GrupoEmiTest.Application;
 using GrupoEmiTest.Infrastructure;
 using GrupoEmiTest.Infrastructure.Extensions;

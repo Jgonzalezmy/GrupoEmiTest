@@ -1,4 +1,4 @@
-﻿namespace GrupoEmiTest.API.Middleware.Extensions;
+﻿namespace GrupoEmiTest.API.Middlewares.Extensions;
 
 /// <summary>
 /// Extension method to register <see cref="RequestLoggingMiddleware"/> in the pipeline.

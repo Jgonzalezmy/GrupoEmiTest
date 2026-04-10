@@ -16,14 +16,14 @@ public sealed class PositionHistoryRepository : Repository<PositionHistory>, IPo
     public PositionHistoryRepository(GrupoEmiTestDBContext context) : base(context) { }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<PositionHistory>> GetByEmployeeIdAsync(int employeeId)
+    public async Task<IReadOnlyList<PositionHistory>> GetByEmployeeIdAsync(int employeeId, CancellationToken cancellationToken = default)
         => await _dbSet
             .Where(ph => ph.EmployeeId == employeeId)
             .OrderBy(ph => ph.StartDate)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
     /// <inheritdoc/>
-    public async Task<PositionHistory?> GetActiveByEmployeeIdAsync(int employeeId)
+    public async Task<PositionHistory?> GetActiveByEmployeeIdAsync(int employeeId, CancellationToken cancellationToken = default)
         => await _dbSet
-            .FirstOrDefaultAsync(ph => ph.EmployeeId == employeeId && ph.EndDate == null);
+            .FirstOrDefaultAsync(ph => ph.EmployeeId == employeeId && ph.EndDate == null, cancellationToken);
 }

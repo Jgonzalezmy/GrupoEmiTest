@@ -1,3 +1,4 @@
+using GrupoEmiTest.API.Extensions;
 using GrupoEmiTest.API.Policies;
 using GrupoEmiTest.Application.DTOs.Request;
 using GrupoEmiTest.Application.Interfaces;
@@ -69,10 +70,10 @@ public sealed class EmployeesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] IdRequest idRequest, CancellationToken cancellationToken = default)
     {
-        var result = await _employeeService.GetByIdAsync(idRequest.Id);
+        var result = await _employeeService.GetByIdAsync(idRequest.Id, cancellationToken);
 
         if (result.IsFailure)
-            return NotFound(new { error = result.Error });
+            return result.ToProblemResult(this);
 
         return Ok(result.Value);
     }
@@ -94,10 +95,10 @@ public sealed class EmployeesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Create([FromBody] EmployeeRequest request, CancellationToken cancellationToken = default)
     {
-        var result = await _employeeService.CreateAsync(request);
+        var result = await _employeeService.CreateAsync(request, cancellationToken);
 
         if (result.IsFailure)
-            return BadRequest(new { error = result.Error });
+            return result.ToProblemResult(this);
 
         return CreatedAtAction(nameof(GetById), new { id = result.Value.Id }, result.Value);
     }
@@ -124,14 +125,11 @@ public sealed class EmployeesController : ControllerBase
     {
         var result = await _employeeService.UpdateAsync(
             id: idRequest.Id,
-            request: request);
+            request: request,
+            cancellationToken: cancellationToken);
 
         if (result.IsFailure)
-        {
-            return result.Error.Type == GrupoEmiTest.Domain.Enums.ErrorType.NotFound
-                ? NotFound(new { error = result.Error })
-                : BadRequest(new { error = result.Error });
-        }
+            return result.ToProblemResult(this);
 
         return Ok(result.Value);
     }
@@ -186,10 +184,10 @@ public sealed class EmployeesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete([FromRoute] IdRequest idRequest, CancellationToken cancellationToken = default)
     {
-        var result = await _employeeService.DeleteAsync(idRequest.Id);
+        var result = await _employeeService.DeleteAsync(idRequest.Id, cancellationToken);
 
         if (result.IsFailure)
-            return NotFound(new { error = result.Error });
+            return result.ToProblemResult(this);
 
         return NoContent();
     }

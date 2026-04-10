@@ -1,4 +1,4 @@
-﻿namespace GrupoEmiTest.API.Middleware;
+﻿namespace GrupoEmiTest.API.Middlewares;
 
 /// <summary>
 /// Custom middleware that logs the details of every incoming HTTP request:

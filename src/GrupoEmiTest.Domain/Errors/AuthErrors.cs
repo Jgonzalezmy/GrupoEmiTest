@@ -17,5 +17,5 @@ public static class AuthErrors
 
     /// <summary>The supplied username or password is incorrect.</summary>
     public static readonly Error InvalidCredentials =
-        Error.Failure("Auth.InvalidCredentials", "Invalid username or password.");
+        Error.Unauthorized("Auth.InvalidCredentials", "Invalid username or password.");
 }

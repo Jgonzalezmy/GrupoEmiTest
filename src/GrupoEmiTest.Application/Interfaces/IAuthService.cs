@@ -17,7 +17,7 @@ public interface IAuthService
     /// A result containing an <see cref="AuthResponse"/> with a JWT on success,
     /// or a failure if the username or email is already taken.
     /// </returns>
-    Task<Result<AuthResponse>> RegisterAsync(RegisterRequest request);
+    Task<Result<AuthResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Authenticates a user with their username and password.
@@ -27,5 +27,5 @@ public interface IAuthService
     /// A result containing an <see cref="AuthResponse"/> with a JWT on success,
     /// or a failure if the credentials are invalid.
     /// </returns>
-    Task<Result<AuthResponse>> LoginAsync(LoginRequest request);
+    Task<Result<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default);
 }

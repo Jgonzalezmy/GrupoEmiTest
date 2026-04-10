@@ -12,8 +12,9 @@ public interface IEmployeeRepository : IRepository<Employee>
     /// Retrieves an employee by ID including their department, position history, and projects.
     /// </summary>
     /// <param name="id">The employee's primary key.</param>
+    /// <param name="cancellationToken">Propagated when the caller is cancelled.</param>
     /// <returns>A task that resolves to the employee with all related data, or <c>null</c>.</returns>
-    Task<Employee?> GetByIdWithDetailsAsync(int id);
+    Task<Employee?> GetByIdWithDetailsAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a page of employees including all related data using keyset pagination.

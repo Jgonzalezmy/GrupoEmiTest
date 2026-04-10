@@ -42,28 +42,24 @@ public static class DependencyInjectionAPI
         // Authorization policies 
         services.AddAuthorization(options =>
         {
-            // Read: Admin and User roles can list/view employees.
             options.AddPolicy(PolicyConstants.ReadPolicy, policy =>
                 policy.RequireRole(nameof(RoleType.Admin), nameof(RoleType.User)));
 
-            // Write: Only Admin can create employees.
             options.AddPolicy(PolicyConstants.WritePolicy, policy =>
                 policy.RequireRole(nameof(RoleType.Admin)));
 
-            // Edit: Only Admin can update employees.
             options.AddPolicy(PolicyConstants.EditPolicy, policy =>
                 policy.RequireRole(nameof(RoleType.Admin)));
 
-            // Delete: Only Admin can delete employees.
             options.AddPolicy(PolicyConstants.DeletePolicy, policy =>
                 policy.RequireRole(nameof(RoleType.Admin)));
         });
 
-        services.AddOpenApi();
-
         //FluentValidator
         services.AddValidatorsFromAssemblyContaining<Program>();
         services.AddFluentValidationAutoValidation();
+
+        services.AddOpenApi();
 
         return services;
     }

@@ -41,9 +41,9 @@ public sealed class EmployeeService : IEmployeeService
     }
 
     /// <inheritdoc/>
-    public async Task<Result<EmployeeResponse>> GetByIdAsync(int id)
+    public async Task<Result<EmployeeResponse>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var employee = await _unitOfWork.Employees.GetByIdWithDetailsAsync(id);
+        var employee = await _unitOfWork.Employees.GetByIdWithDetailsAsync(id, cancellationToken);
 
         if (employee is null)
             return EmployeeErrors.NotFound();
@@ -52,7 +52,7 @@ public sealed class EmployeeService : IEmployeeService
     }
 
     /// <inheritdoc/>
-    public async Task<Result<EmployeeResponse>> CreateAsync(EmployeeRequest request)
+    public async Task<Result<EmployeeResponse>> CreateAsync(EmployeeRequest request, CancellationToken cancellationToken = default)
     {
         var employeeResult = Employee.Create(
             name: request.Name,
@@ -65,8 +65,8 @@ public sealed class EmployeeService : IEmployeeService
 
         return await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
-            await _unitOfWork.Employees.AddAsync(employeeResult.Value);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.Employees.AddAsync(employeeResult.Value, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             var historyResult = PositionHistory.Create(
                 employeeId: employeeResult.Value.Id,
@@ -76,17 +76,17 @@ public sealed class EmployeeService : IEmployeeService
             if (historyResult.IsFailure)
                 return historyResult.Error;
 
-            await _unitOfWork.PositionHistories.AddAsync(historyResult.Value);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.PositionHistories.AddAsync(historyResult.Value, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success(employeeResult.Value.ToResponse());
-        });
+        }, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<Result<EmployeeResponse>> UpdateAsync(int id, EmployeeRequest request)
+    public async Task<Result<EmployeeResponse>> UpdateAsync(int id, EmployeeRequest request, CancellationToken cancellationToken = default)
     {
-        var employee = await _unitOfWork.Employees.GetByIdWithDetailsAsync(id);
+        var employee = await _unitOfWork.Employees.GetByIdWithDetailsAsync(id, cancellationToken);
 
         if (employee is null)
             return EmployeeErrors.NotFound(id);
@@ -104,17 +104,16 @@ public sealed class EmployeeService : IEmployeeService
 
         if (!positionChanged)
         {
-            _unitOfWork.Employees.Update(employee);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.UpdateAndSaveAsync(employee, cancellationToken);
             return Result.Success(employee.ToResponse());
         }
 
         return await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
             _unitOfWork.Employees.Update(employee);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var activeHistory = await _unitOfWork.PositionHistories.GetActiveByEmployeeIdAsync(id);
+            var activeHistory = await _unitOfWork.PositionHistories.GetActiveByEmployeeIdAsync(id, cancellationToken);
             if (activeHistory is not null)
             {
                 var closeResult = activeHistory.Close(DateTime.UtcNow);
@@ -132,23 +131,22 @@ public sealed class EmployeeService : IEmployeeService
             if (newHistoryResult.IsFailure)
                 return newHistoryResult.Error;
 
-            await _unitOfWork.PositionHistories.AddAsync(newHistoryResult.Value);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.PositionHistories.AddAsync(newHistoryResult.Value, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success(employee.ToResponse());
-        });
+        }, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<Result> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        var employee = await _unitOfWork.Employees.GetByIdAsync(id);
+        var employee = await _unitOfWork.Employees.GetByIdAsync(id, cancellationToken);
 
         if (employee is null)
             return EmployeeErrors.NotFound(id);
 
-        _unitOfWork.Employees.Delete(employee);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.DeleteAndSaveAsync(employee, cancellationToken);
 
         return Result.Success();
     }

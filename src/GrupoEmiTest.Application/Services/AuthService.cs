@@ -41,15 +41,15 @@ public sealed class AuthService : IAuthService
     }
 
     /// <inheritdoc/>
-    public async Task<Result<AuthResponse>> RegisterAsync(RegisterRequest request)
+    public async Task<Result<AuthResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
     {
         var userRepository = _unitOfWork.Users;
 
-        bool usernameExists = await userRepository.ExistsAsync(u => u.Username == request.Username);
+        bool usernameExists = await userRepository.ExistsAsync(u => u.Username == request.Username, cancellationToken);
         if (usernameExists)
             return AuthErrors.UsernameExists;
 
-        bool emailExists = await userRepository.ExistsAsync(u => u.Email == request.Email);
+        bool emailExists = await userRepository.ExistsAsync(u => u.Email == request.Email, cancellationToken);
         if (emailExists)
             return AuthErrors.EmailExists;
 
@@ -59,19 +59,18 @@ public sealed class AuthService : IAuthService
             _passwordHasher.Hash(request.Password),
             request.Role);
 
-        await userRepository.AddAsync(user);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.AddAndSaveAsync(user, cancellationToken);
 
         var token = _tokenService.GenerateToken(user);
         return BuildAuthResponse(user, token);
     }
 
     /// <inheritdoc/>
-    public async Task<Result<AuthResponse>> LoginAsync(LoginRequest request)
+    public async Task<Result<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
     {
         var userRepository = _unitOfWork.Users;
 
-        var user = await userRepository.FindAsync(u => u.Username == request.Username);
+        var user = await userRepository.FindAsync(u => u.Username == request.Username, cancellationToken);
         if (user is null)
             return AuthErrors.InvalidCredentials;
 

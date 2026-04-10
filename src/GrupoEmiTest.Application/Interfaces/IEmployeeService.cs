@@ -21,30 +21,34 @@ public interface IEmployeeService
     /// Retrieves a single employee by ID including department, position history, and projects.
     /// </summary>
     /// <param name="id">The employee's primary key.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>A result containing the <see cref="EmployeeResponse"/>, or a not-found failure.</returns>
-    Task<Result<EmployeeResponse>> GetByIdAsync(int id);
+    Task<Result<EmployeeResponse>> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates a new employee from the provided request data.
     /// </summary>
     /// <param name="request">The data required to create the employee.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>A result containing the newly created <see cref="EmployeeResponse"/>.</returns>
-    Task<Result<EmployeeResponse>> CreateAsync(EmployeeRequest request);
+    Task<Result<EmployeeResponse>> CreateAsync(EmployeeRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates an existing employee identified by <paramref name="id"/>.
     /// </summary>
     /// <param name="id">The employee's primary key.</param>
     /// <param name="request">The updated employee data.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>A result containing the updated <see cref="EmployeeResponse"/>, or a not-found failure.</returns>
-    Task<Result<EmployeeResponse>> UpdateAsync(int id, EmployeeRequest request);
+    Task<Result<EmployeeResponse>> UpdateAsync(int id, EmployeeRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes an employee by ID.
     /// </summary>
     /// <param name="id">The employee's primary key.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>A result indicating success, or a not-found failure.</returns>
-    Task<Result> DeleteAsync(int id);
+    Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a keyset-paginated page of employees that belong to the specified department

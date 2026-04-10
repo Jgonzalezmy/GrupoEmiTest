@@ -11,14 +11,16 @@ public interface IPositionHistoryRepository : IRepository<PositionHistory>
     /// Retrieves all position-history records for the given employee, ordered by start date ascending.
     /// </summary>
     /// <param name="employeeId">The employee's primary key.</param>
+    /// <param name="cancellationToken">Propagated when the caller is cancelled.</param>
     /// <returns>A task that resolves to a read-only list of position-history records.</returns>
-    Task<IReadOnlyList<PositionHistory>> GetByEmployeeIdAsync(int employeeId);
+    Task<IReadOnlyList<PositionHistory>> GetByEmployeeIdAsync(int employeeId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the currently active position-history record for the given employee
     /// (the one with no <c>EndDate</c>), or <c>null</c> if none exists.
     /// </summary>
     /// <param name="employeeId">The employee's primary key.</param>
+    /// <param name="cancellationToken">Propagated when the caller is cancelled.</param>
     /// <returns>A task that resolves to the active record, or <c>null</c>.</returns>
-    Task<PositionHistory?> GetActiveByEmployeeIdAsync(int employeeId);
+    Task<PositionHistory?> GetActiveByEmployeeIdAsync(int employeeId, CancellationToken cancellationToken = default);
 }

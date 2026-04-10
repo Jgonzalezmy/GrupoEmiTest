@@ -1,4 +1,5 @@
-﻿using GrupoEmiTest.Domain.Interfaces;
+﻿using GrupoEmiTest.Domain.Common;
+using GrupoEmiTest.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -40,8 +41,8 @@ public class Repository<T> : IRepository<T> where T : class
     /// A <see cref="Task{TResult}"/> that resolves to a read-only list containing
     /// all persisted entities, or an empty list if none exist.
     /// </returns>
-    public async Task<IReadOnlyList<T>> GetAllAsync()
-        => await _dbSet.ToListAsync();
+    public async Task<IReadOnlyList<T>> GetAllAsync(CancellationToken cancellationToken = default)
+        => await _dbSet.ToListAsync(cancellationToken);
 
     /// <summary>
     /// Asynchronously retrieves a single entity by its primary key.
@@ -51,8 +52,8 @@ public class Repository<T> : IRepository<T> where T : class
     /// A <see cref="Task{TResult}"/> that resolves to the matching entity,
     /// or <see langword="null"/> if no entity with the given <paramref name="id"/> exists.
     /// </returns>
-    public async Task<T?> GetByIdAsync(int id)
-        => await _dbSet.FindAsync(id);
+    public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        => await _dbSet.FindAsync([id], cancellationToken);
 
     /// <summary>
     /// Asynchronously retrieves the first entity that satisfies the specified predicate.
@@ -64,8 +65,8 @@ public class Repository<T> : IRepository<T> where T : class
     /// A <see cref="Task{TResult}"/> that resolves to the first matching entity,
     /// or <see langword="null"/> if no entity satisfies the <paramref name="predicate"/>.
     /// </returns>
-    public async Task<T?> FindAsync(Expression<Func<T, bool>> predicate)
-        => await _dbSet.FirstOrDefaultAsync(predicate);
+    public async Task<T?> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+        => await _dbSet.FirstOrDefaultAsync(predicate, cancellationToken);
 
     /// <summary>
     /// Asynchronously retrieves all entities that satisfy the specified predicate.
@@ -77,8 +78,8 @@ public class Repository<T> : IRepository<T> where T : class
     /// A <see cref="Task{TResult}"/> that resolves to a read-only list of all entities
     /// matching the <paramref name="predicate"/>, or an empty list if none match.
     /// </returns>
-    public async Task<IReadOnlyList<T>> FindAllAsync(Expression<Func<T, bool>> predicate)
-        => await _dbSet.Where(predicate).ToListAsync();
+    public async Task<IReadOnlyList<T>> FindAllAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+        => await _dbSet.Where(predicate).ToListAsync(cancellationToken);
 
     /// <summary>
     /// Asynchronously adds a new entity to the database context.
@@ -86,8 +87,8 @@ public class Repository<T> : IRepository<T> where T : class
     /// </summary>
     /// <param name="entity">The entity instance to add. Must not be <see langword="null"/>.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous add operation.</returns>
-    public async Task AddAsync(T entity)
-        => await _dbSet.AddAsync(entity);
+    public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
+        => await _dbSet.AddAsync(entity, cancellationToken);
 
     /// <summary>
     /// Marks an existing entity as modified in the database context.
@@ -115,6 +116,46 @@ public class Repository<T> : IRepository<T> where T : class
     /// A <see cref="Task{TResult}"/> that resolves to <see langword="true"/> if at least
     /// one entity matches the <paramref name="predicate"/>; otherwise <see langword="false"/>.
     /// </returns>
-    public async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
-        => await _dbSet.AnyAsync(predicate);
+    public async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+        => await _dbSet.AnyAsync(predicate, cancellationToken);
+
+    /// <summary>
+    /// Returns a keyset-paginated page of entities, avoiding <c>OFFSET/SKIP</c> entirely.
+    /// Filters by <c>key &gt; lastId</c> and orders by the same key so EF Core generates
+    /// an efficient index-seek query.
+    /// </summary>
+    /// <param name="request">Page size and optional cursor from the previous page.</param>
+    /// <param name="keySelector">Expression that selects the integer key (e.g. <c>e => e.Id</c>).</param>
+    /// <param name="cancellationToken">Propagated when the caller is cancelled.</param>
+    public async Task<PagedResult<T>> GetPageAsync(
+        PageRequest request,
+        Expression<Func<T, int>> keySelector,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbSet.AsNoTracking();
+
+        if (request.LastId.HasValue)
+        {
+            var parameter = keySelector.Parameters[0];
+            var body = Expression.GreaterThan(
+                keySelector.Body,
+                Expression.Constant(request.LastId.Value));
+            var filter = Expression.Lambda<Func<T, bool>>(body, parameter);
+            query = query.Where(filter);
+        }
+
+        var items = await query
+            .OrderBy(keySelector)
+            .Take(request.PageSize + 1)
+            .ToListAsync(cancellationToken);
+
+        var hasNextPage = items.Count > request.PageSize;
+
+        if (hasNextPage)
+            items.RemoveAt(items.Count - 1);
+
+        var nextCursor = hasNextPage ? keySelector.Compile()(items[^1]) : (int?)null;
+
+        return new PagedResult<T>(items, nextCursor, hasNextPage);
+    }
 }

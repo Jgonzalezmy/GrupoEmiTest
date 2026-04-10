@@ -26,29 +26,50 @@ public sealed class UnitOfWork(
     public IRepository<ApplicationUser> Users { get; } = users;
 
     /// <inheritdoc/>
-    public async Task<int> SaveChangesAsync()
-        => await context.SaveChangesAsync();
+    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        => await context.SaveChangesAsync(cancellationToken);
 
     /// <inheritdoc/>
-    public async Task<Result<T>> ExecuteInTransactionAsync<T>(Func<Task<Result<T>>> operation)
+    public async Task AddAndSaveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class
     {
-        await using IDbContextTransaction transaction = await context.Database.BeginTransactionAsync();
+        await context.Set<T>().AddAsync(entity, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task UpdateAndSaveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class
+    {
+        context.Set<T>().Update(entity);
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task DeleteAndSaveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class
+    {
+        context.Set<T>().Remove(entity);
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<T>> ExecuteInTransactionAsync<T>(Func<Task<Result<T>>> operation, CancellationToken cancellationToken = default)
+    {
+        await using IDbContextTransaction transaction = await context.Database.BeginTransactionAsync(cancellationToken);
         try
         {
             var result = await operation();
 
             if (result.IsFailure)
             {
-                await transaction.RollbackAsync();
+                await transaction.RollbackAsync(cancellationToken);
                 return result;
             }
 
-            await transaction.CommitAsync();
+            await transaction.CommitAsync(cancellationToken);
             return result;
         }
         catch
         {
-            await transaction.RollbackAsync();
+            await transaction.RollbackAsync(cancellationToken);
             throw;
         }
     }
