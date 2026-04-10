@@ -47,45 +47,33 @@ public sealed class DataSeeder(GrupoEmiTestDBContext context, IPasswordHasher pa
             username:     "admin.grupoemi",
             email:        "admin@grupoemi.com",
             passwordHash: passwordHasher.Hash("GrupoEmi2026!"),
-            role:         RoleType.Admin),
+            role:         RoleType.Admin).Value,
         ApplicationUser.Create(
             username:     "user.grupoemi",
             email:        "user@grupoemi.com",
             passwordHash: passwordHasher.Hash("GrupoEmi2026!"),
-            role:         RoleType.User)
+            role:         RoleType.User).Value
     ];
 
     private static List<Department> BuildDepartments() =>
     [
-        new() { Name = "Engineering" },
-        new() { Name = "Marketing" },
-        new() { Name = "Human Resources" }
+        Department.Create("Engineering").Value,
+        Department.Create("Marketing").Value,
+        Department.Create("Human Resources").Value
     ];
 
     private static List<Project> BuildProjects() =>
     [
-        new()
-        {
-            Name        = "ERP System Modernization",
-            Description = "Full migration of the legacy ERP to a modern cloud-based architecture."
-        },
-        new()
-        {
-            Name        = "Digital Marketing Platform",
-            Description = "Integrated platform for campaign management and analytics."
-        },
-        new()
-        {
-            Name        = "Talent Management System",
-            Description = "Internal tool for tracking recruitment, onboarding, and performance reviews."
-        }
+        Project.Create("ERP System Modernization",   "Full migration of the legacy ERP to a modern cloud-based architecture."),
+        Project.Create("Digital Marketing Platform", "Integrated platform for campaign management and analytics."),
+        Project.Create("Talent Management System",   "Internal tool for tracking recruitment, onboarding, and performance reviews.")
     ];
 
     private static List<Employee> BuildEmployees(List<Department> departments, List<Project> projects)
     {
         var engineering = departments[0];
-        var marketing = departments[1];
-        var hr = departments[2];
+        var marketing   = departments[1];
+        var hr          = departments[2];
 
         var erp = projects[0];
         var dmp = projects[1];
@@ -93,318 +81,123 @@ public sealed class DataSeeder(GrupoEmiTestDBContext context, IPasswordHasher pa
 
         return
         [
-            // ── Existing employees ─────────────────────────────────────────────
-            new()
-            {
-                Name            = "Carlos Méndez",
-                CurrentPosition = PositionType.DepartmentManager,
-                Salary          = 8_500m,
-                Department      = engineering,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee,   StartDate = new DateTime(2020, 3, 1),  EndDate = new DateTime(2022, 6, 30) },
-                    new() { Position = PositionType.TeamLead,          StartDate = new DateTime(2022, 7, 1),  EndDate = new DateTime(2023, 8, 31) },
-                    new() { Position = PositionType.DepartmentManager, StartDate = new DateTime(2023, 9, 1) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = erp },
-                    new() { Project = dmp }
-                ]
-            },
-            new()
-            {
-                Name            = "Ana García",
-                CurrentPosition = PositionType.TeamLead,
-                Salary          = 6_200m,
-                Department      = marketing,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee, StartDate = new DateTime(2019, 1, 15), EndDate = new DateTime(2021, 12, 31) },
-                    new() { Position = PositionType.TeamLead,        StartDate = new DateTime(2022, 1, 1) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = dmp }
-                ]
-            },
-            new()
-            {
-                Name            = "Luis Torres",
-                CurrentPosition = PositionType.RegularEmployee,
-                Salary          = 3_800m,
-                Department      = hr,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee, StartDate = new DateTime(2023, 4, 10) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = tms }
-                ]
-            },
-            new()
-            {
-                Name            = "María Rodríguez",
-                CurrentPosition = PositionType.RegularEmployee,
-                Salary          = 4_200m,
-                Department      = engineering,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee, StartDate = new DateTime(2022, 9, 5) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = erp },
-                    new() { Project = tms }
-                ]
-            },
+            Seed("Carlos Méndez",      PositionType.DepartmentManager, 8_500m,  engineering,
+                [ History(PositionType.RegularEmployee,   new(2020, 3, 1),  new(2022, 6, 30)),
+                  History(PositionType.TeamLead,          new(2022, 7, 1),  new(2023, 8, 31)),
+                  History(PositionType.DepartmentManager, new(2023, 9, 1)) ],
+                [erp, dmp]),
 
-            // ── New employees ──────────────────────────────────────────────────
-            new()
-            {
-                Name            = "Roberto Sánchez",
-                CurrentPosition = PositionType.Director,
-                Salary          = 12_000m,
-                Department      = engineering,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee,   StartDate = new DateTime(2015, 2, 1),  EndDate = new DateTime(2018, 3, 31) },
-                    new() { Position = PositionType.TeamLead,          StartDate = new DateTime(2018, 4, 1),  EndDate = new DateTime(2020, 6, 30) },
-                    new() { Position = PositionType.DepartmentManager, StartDate = new DateTime(2020, 7, 1),  EndDate = new DateTime(2022, 12, 31) },
-                    new() { Position = PositionType.Director,          StartDate = new DateTime(2023, 1, 1) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = erp },
-                    new() { Project = dmp },
-                    new() { Project = tms }
-                ]
-            },
-            new()
-            {
-                Name            = "Patricia López",
-                CurrentPosition = PositionType.VicePresident,
-                Salary          = 15_000m,
-                Department      = marketing,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.DepartmentManager, StartDate = new DateTime(2016, 5, 1),  EndDate = new DateTime(2019, 8, 31) },
-                    new() { Position = PositionType.GeneralManager,    StartDate = new DateTime(2019, 9, 1),  EndDate = new DateTime(2022, 6, 30) },
-                    new() { Position = PositionType.VicePresident,     StartDate = new DateTime(2022, 7, 1) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = dmp }
-                ]
-            },
-            new()
-            {
-                Name            = "Diego Fernández",
-                CurrentPosition = PositionType.TeamLead,
-                Salary          = 5_500m,
-                Department      = engineering,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee, StartDate = new DateTime(2020, 6, 1), EndDate = new DateTime(2023, 5, 31) },
-                    new() { Position = PositionType.TeamLead,        StartDate = new DateTime(2023, 6, 1) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = erp },
-                    new() { Project = tms }
-                ]
-            },
-            new()
-            {
-                Name            = "Valentina Martínez",
-                CurrentPosition = PositionType.RegularEmployee,
-                Salary          = 3_600m,
-                Department      = marketing,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee, StartDate = new DateTime(2023, 8, 14) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = dmp }
-                ]
-            },
-            new()
-            {
-                Name            = "Andrés Herrera",
-                CurrentPosition = PositionType.DepartmentManager,
-                Salary          = 7_800m,
-                Department      = hr,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee,   StartDate = new DateTime(2018, 3, 1),  EndDate = new DateTime(2021, 2, 28) },
-                    new() { Position = PositionType.TeamLead,          StartDate = new DateTime(2021, 3, 1),  EndDate = new DateTime(2023, 7, 31) },
-                    new() { Position = PositionType.DepartmentManager, StartDate = new DateTime(2023, 8, 1) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = tms }
-                ]
-            },
-            new()
-            {
-                Name            = "Camila Jiménez",
-                CurrentPosition = PositionType.RegularEmployee,
-                Salary          = 4_000m,
-                Department      = engineering,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee, StartDate = new DateTime(2022, 11, 7) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = erp }
-                ]
-            },
-            new()
-            {
-                Name            = "Javier Morales",
-                CurrentPosition = PositionType.TeamLead,
-                Salary          = 5_800m,
-                Department      = hr,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee, StartDate = new DateTime(2020, 1, 20), EndDate = new DateTime(2022, 9, 30) },
-                    new() { Position = PositionType.TeamLead,        StartDate = new DateTime(2022, 10, 1) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = tms }
-                ]
-            },
-            new()
-            {
-                Name            = "Sofía Castro",
-                CurrentPosition = PositionType.RegularEmployee,
-                Salary          = 3_500m,
-                Department      = marketing,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee, StartDate = new DateTime(2024, 2, 1) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = dmp }
-                ]
-            },
-            new()
-            {
-                Name            = "Miguel Ángel Reyes",
-                CurrentPosition = PositionType.GeneralManager,
-                Salary          = 11_000m,
-                Department      = engineering,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.TeamLead,          StartDate = new DateTime(2017, 4, 1),  EndDate = new DateTime(2019, 9, 30) },
-                    new() { Position = PositionType.DepartmentManager, StartDate = new DateTime(2019, 10, 1), EndDate = new DateTime(2022, 11, 30) },
-                    new() { Position = PositionType.GeneralManager,    StartDate = new DateTime(2022, 12, 1) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = erp }
-                ]
-            },
-            new()
-            {
-                Name            = "Lucía Vargas",
-                CurrentPosition = PositionType.RegularEmployee,
-                Salary          = 4_100m,
-                Department      = engineering,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee, StartDate = new DateTime(2023, 3, 15) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = erp },
-                    new() { Project = dmp }
-                ]
-            },
-            new()
-            {
-                Name            = "Tomás Guerrero",
-                CurrentPosition = PositionType.TeamLead,
-                Salary          = 5_600m,
-                Department      = marketing,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee, StartDate = new DateTime(2021, 7, 1), EndDate = new DateTime(2023, 6, 30) },
-                    new() { Position = PositionType.TeamLead,        StartDate = new DateTime(2023, 7, 1) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = dmp }
-                ]
-            },
-            new()
-            {
-                Name            = "Isabel Ramírez",
-                CurrentPosition = PositionType.RegularEmployee,
-                Salary          = 3_700m,
-                Department      = hr,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee, StartDate = new DateTime(2022, 5, 23) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = tms }
-                ]
-            },
-            new()
-            {
-                Name            = "Sebastián Mendoza",
-                CurrentPosition = PositionType.DepartmentManager,
-                Salary          = 8_200m,
-                Department      = marketing,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee,   StartDate = new DateTime(2017, 9, 1),  EndDate = new DateTime(2020, 4, 30) },
-                    new() { Position = PositionType.TeamLead,          StartDate = new DateTime(2020, 5, 1),  EndDate = new DateTime(2022, 10, 31) },
-                    new() { Position = PositionType.DepartmentManager, StartDate = new DateTime(2022, 11, 1) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = dmp },
-                    new() { Project = tms }
-                ]
-            },
-            new()
-            {
-                Name            = "Natalia Flores",
-                CurrentPosition = PositionType.RegularEmployee,
-                Salary          = 4_300m,
-                Department      = engineering,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee, StartDate = new DateTime(2024, 1, 8) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = erp }
-                ]
-            },
-            new()
-            {
-                Name            = "Emilio Ortega",
-                CurrentPosition = PositionType.RegularEmployee,
-                Salary          = 3_900m,
-                Department      = hr,
-                PositionHistories =
-                [
-                    new() { Position = PositionType.RegularEmployee, StartDate = new DateTime(2023, 10, 2) }
-                ],
-                EmployeeProjects =
-                [
-                    new() { Project = tms }
-                ]
-            }
+            Seed("Ana García",         PositionType.TeamLead,          6_200m,  marketing,
+                [ History(PositionType.RegularEmployee, new(2019, 1, 15), new(2021, 12, 31)),
+                  History(PositionType.TeamLead,        new(2022, 1, 1)) ],
+                [dmp]),
+
+            Seed("Luis Torres",        PositionType.RegularEmployee,   3_800m,  hr,
+                [ History(PositionType.RegularEmployee, new(2023, 4, 10)) ],
+                [tms]),
+
+            Seed("María Rodríguez",    PositionType.RegularEmployee,   4_200m,  engineering,
+                [ History(PositionType.RegularEmployee, new(2022, 9, 5)) ],
+                [erp, tms]),
+
+            Seed("Roberto Sánchez",    PositionType.Director,          12_000m, engineering,
+                [ History(PositionType.RegularEmployee,   new(2015, 2, 1),  new(2018, 3, 31)),
+                  History(PositionType.TeamLead,          new(2018, 4, 1),  new(2020, 6, 30)),
+                  History(PositionType.DepartmentManager, new(2020, 7, 1),  new(2022, 12, 31)),
+                  History(PositionType.Director,          new(2023, 1, 1)) ],
+                [erp, dmp, tms]),
+
+            Seed("Patricia López",     PositionType.VicePresident,     15_000m, marketing,
+                [ History(PositionType.DepartmentManager, new(2016, 5, 1),  new(2019, 8, 31)),
+                  History(PositionType.GeneralManager,    new(2019, 9, 1),  new(2022, 6, 30)),
+                  History(PositionType.VicePresident,     new(2022, 7, 1)) ],
+                [dmp]),
+
+            Seed("Diego Fernández",    PositionType.TeamLead,          5_500m,  engineering,
+                [ History(PositionType.RegularEmployee, new(2020, 6, 1),  new(2023, 5, 31)),
+                  History(PositionType.TeamLead,        new(2023, 6, 1)) ],
+                [erp, tms]),
+
+            Seed("Valentina Martínez", PositionType.RegularEmployee,   3_600m,  marketing,
+                [ History(PositionType.RegularEmployee, new(2023, 8, 14)) ],
+                [dmp]),
+
+            Seed("Andrés Herrera",     PositionType.DepartmentManager, 7_800m,  hr,
+                [ History(PositionType.RegularEmployee,   new(2018, 3, 1),  new(2021, 2, 28)),
+                  History(PositionType.TeamLead,          new(2021, 3, 1),  new(2023, 7, 31)),
+                  History(PositionType.DepartmentManager, new(2023, 8, 1)) ],
+                [tms]),
+
+            Seed("Camila Jiménez",     PositionType.RegularEmployee,   4_000m,  engineering,
+                [ History(PositionType.RegularEmployee, new(2022, 11, 7)) ],
+                [erp]),
+
+            Seed("Javier Morales",     PositionType.TeamLead,          5_800m,  hr,
+                [ History(PositionType.RegularEmployee, new(2020, 1, 20), new(2022, 9, 30)),
+                  History(PositionType.TeamLead,        new(2022, 10, 1)) ],
+                [tms]),
+
+            Seed("Sofía Castro",       PositionType.RegularEmployee,   3_500m,  marketing,
+                [ History(PositionType.RegularEmployee, new(2024, 2, 1)) ],
+                [dmp]),
+
+            Seed("Miguel Ángel Reyes", PositionType.GeneralManager,    11_000m, engineering,
+                [ History(PositionType.TeamLead,          new(2017, 4, 1),  new(2019, 9, 30)),
+                  History(PositionType.DepartmentManager, new(2019, 10, 1), new(2022, 11, 30)),
+                  History(PositionType.GeneralManager,    new(2022, 12, 1)) ],
+                [erp]),
+
+            Seed("Lucía Vargas",       PositionType.RegularEmployee,   4_100m,  engineering,
+                [ History(PositionType.RegularEmployee, new(2023, 3, 15)) ],
+                [erp, dmp]),
+
+            Seed("Tomás Guerrero",     PositionType.TeamLead,          5_600m,  marketing,
+                [ History(PositionType.RegularEmployee, new(2021, 7, 1),  new(2023, 6, 30)),
+                  History(PositionType.TeamLead,        new(2023, 7, 1)) ],
+                [dmp]),
+
+            Seed("Isabel Ramírez",     PositionType.RegularEmployee,   3_700m,  hr,
+                [ History(PositionType.RegularEmployee, new(2022, 5, 23)) ],
+                [tms]),
+
+            Seed("Sebastián Mendoza",  PositionType.DepartmentManager, 8_200m,  marketing,
+                [ History(PositionType.RegularEmployee,   new(2017, 9, 1),  new(2020, 4, 30)),
+                  History(PositionType.TeamLead,          new(2020, 5, 1),  new(2022, 10, 31)),
+                  History(PositionType.DepartmentManager, new(2022, 11, 1)) ],
+                [dmp, tms]),
+
+            Seed("Natalia Flores",     PositionType.RegularEmployee,   4_300m,  engineering,
+                [ History(PositionType.RegularEmployee, new(2024, 1, 8)) ],
+                [erp]),
+
+            Seed("Emilio Ortega",      PositionType.RegularEmployee,   3_900m,  hr,
+                [ History(PositionType.RegularEmployee, new(2023, 10, 2)) ],
+                [tms])
         ];
     }
+
+    /// <summary>
+    /// Builds an <see cref="Employee"/> via the domain factory and attaches its related collections.
+    /// EF Core sets the FK values through relationship fixup when SaveChangesAsync is called.
+    /// </summary>
+    private static Employee Seed(
+        string name,
+        PositionType position,
+        decimal salary,
+        Department department,
+        PositionHistory[] histories,
+        Project[] projects)
+    {
+        var employee = Employee.Create(name, position, salary, department.Id).Value;
+        employee.PositionHistories = histories.ToList();
+        employee.EmployeeProjects  = projects.Select(p => new EmployeeProject { Project = p }).ToList();
+        return employee;
+    }
+
+    /// <summary>
+    /// Creates a <see cref="PositionHistory"/> for seeding without a known employee ID.
+    /// EF Core resolves the FK through the parent collection during SaveChangesAsync.
+    /// </summary>
+    private static PositionHistory History(PositionType position, DateTime start, DateTime? end = null)
+        => PositionHistory.Create(0, position, start, end).Value;
 }

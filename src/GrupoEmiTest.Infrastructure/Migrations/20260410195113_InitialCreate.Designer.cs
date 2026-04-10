@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GrupoEmiTest.Infrastructure.Migrations
 {
     [DbContext(typeof(GrupoEmiTestDBContext))]
-    [Migration("20260410190221_InitialCreate")]
+    [Migration("20260410195113_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

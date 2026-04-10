@@ -12,20 +12,20 @@ namespace GrupoEmiTest.Domain.Entities;
 /// </summary>
 public class Employee
 {
-    /// <summary>Gets or sets the unique identifier of the employee.</summary>
-    public int Id { get; set; }
+    /// <summary>Gets the unique identifier of the employee.</summary>
+    public int Id { get; private set; }
 
-    /// <summary>Gets or sets the full name of the employee.</summary>
-    public string Name { get; set; } = string.Empty;
+    /// <summary>Gets the full name of the employee.</summary>
+    public string Name { get; private set; } = string.Empty;
 
-    /// <summary>Gets or sets the employee's current position type.</summary>
-    public PositionType CurrentPosition { get; set; }
+    /// <summary>Gets the employee's current position type.</summary>
+    public PositionType CurrentPosition { get; private set; }
 
-    /// <summary>Gets or sets the employee's monthly salary.</summary>
-    public decimal Salary { get; set; }
+    /// <summary>Gets the employee's monthly salary.</summary>
+    public decimal Salary { get; private set; }
 
-    /// <summary>Gets or sets the identifier of the department the employee belongs to.</summary>
-    public int DepartmentId { get; set; }
+    /// <summary>Gets the identifier of the department the employee belongs to.</summary>
+    public int DepartmentId { get; private set; }
 
 
     /// <summary>Gets or sets the department this employee belongs to.</summary>
@@ -96,6 +96,9 @@ public class Employee
 
         if (salary <= 0)
             return EmployeeErrors.InvalidSalary;
+
+        if (departmentId <= 0)
+            return EmployeeErrors.InvalidDepartmentId;
 
         Name = name.Trim();
         CurrentPosition = position;

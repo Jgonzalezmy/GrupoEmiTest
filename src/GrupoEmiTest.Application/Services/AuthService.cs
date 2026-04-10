@@ -53,11 +53,16 @@ public sealed class AuthService : IAuthService
         if (emailExists)
             return AuthErrors.EmailExists;
 
-        var user = ApplicationUser.Create(
+        var userResult = ApplicationUser.Create(
             request.Username,
             request.Email,
             _passwordHasher.Hash(request.Password),
             request.Role);
+
+        if (userResult.IsFailure)
+            return userResult.Error;
+
+        var user = userResult.Value;
 
         await _unitOfWork.AddAndSaveAsync(user, cancellationToken);
 

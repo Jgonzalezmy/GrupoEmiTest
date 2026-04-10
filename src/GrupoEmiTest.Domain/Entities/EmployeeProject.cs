@@ -5,11 +5,11 @@
 /// </summary>
 public class EmployeeProject
 {
-    /// <summary>Gets or sets the identifier of the employee.</summary>
-    public int EmployeeId { get; set; }
+    /// <summary>Gets the identifier of the employee.</summary>
+    public int EmployeeId { get; private set; }
 
-    /// <summary>Gets or sets the identifier of the project.</summary>
-    public int ProjectId { get; set; }
+    /// <summary>Gets the identifier of the project.</summary>
+    public int ProjectId { get; private set; }
 
     /// <summary>Gets or sets the associated employee navigation property.</summary>
     public Employee Employee { get; set; } = null!;

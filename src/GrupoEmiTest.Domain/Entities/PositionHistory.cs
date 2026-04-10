@@ -9,23 +9,23 @@ namespace GrupoEmiTest.Domain.Entities;
 /// </summary>
 public class PositionHistory
 {
-    /// <summary>Gets or sets the unique identifier of the position-history record.</summary>
-    public int Id { get; set; }
+    /// <summary>Gets the unique identifier of the position-history record.</summary>
+    public int Id { get; private set; }
 
-    /// <summary>Gets or sets the identifier of the employee this record belongs to.</summary>
-    public int EmployeeId { get; set; }
+    /// <summary>Gets the identifier of the employee this record belongs to.</summary>
+    public int EmployeeId { get; private set; }
 
-    /// <summary>Gets or sets the name of the position held.</summary>
-    public PositionType Position { get; set; }
+    /// <summary>Gets the name of the position held.</summary>
+    public PositionType Position { get; private set; }
 
-    /// <summary>Gets or sets the date on which the employee started this position.</summary>
-    public DateTime StartDate { get; set; }
+    /// <summary>Gets the date on which the employee started this position.</summary>
+    public DateTime StartDate { get; private set; }
 
     /// <summary>
-    /// Gets or sets the date on which the employee left this position.
+    /// Gets the date on which the employee left this position.
     /// A <c>null</c> value indicates that this is the employee's current position.
     /// </summary>
-    public DateTime? EndDate { get; set; }
+    public DateTime? EndDate { get; private set; }
 
     /// <summary>Gets or sets the associated employee navigation property.</summary>
     public Employee Employee { get; set; } = null!;

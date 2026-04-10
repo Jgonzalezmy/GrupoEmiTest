@@ -15,6 +15,18 @@ public static class AuthErrors
     public static readonly Error EmailExists =
         Error.Conflict("Auth.EmailExists", "Email is already registered.");
 
+    /// <summary>The provided username is null or empty.</summary>
+    public static readonly Error InvalidUsername =
+        Error.Validation("Auth.InvalidUsername", "Username cannot be empty.");
+
+    /// <summary>The provided email is null or empty.</summary>
+    public static readonly Error InvalidEmail =
+        Error.Validation("Auth.InvalidEmail", "Email cannot be empty.");
+
+    /// <summary>The provided password hash is null or empty.</summary>
+    public static readonly Error InvalidPasswordHash =
+        Error.Validation("Auth.InvalidPasswordHash", "Password hash cannot be empty.");
+
     /// <summary>The supplied username or password is incorrect.</summary>
     public static readonly Error InvalidCredentials =
         Error.Unauthorized("Auth.InvalidCredentials", "Invalid username or password.");
