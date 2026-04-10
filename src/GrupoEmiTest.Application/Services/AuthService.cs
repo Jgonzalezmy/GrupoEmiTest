@@ -3,6 +3,7 @@ using GrupoEmiTest.Application.DTOs.Response;
 using GrupoEmiTest.Application.Interfaces;
 using GrupoEmiTest.Domain.Common;
 using GrupoEmiTest.Domain.Entities;
+using GrupoEmiTest.Domain.Errors;
 using GrupoEmiTest.Domain.Interfaces;
 
 namespace GrupoEmiTest.Application.Services;
@@ -40,11 +41,11 @@ public sealed class AuthService : IAuthService
 
         bool usernameExists = await userRepository.ExistsAsync(u => u.Username == request.Username);
         if (usernameExists)
-            return Error.Conflict("Auth.UsernameExists", "Username is already taken.");
+            return AuthErrors.UsernameExists;
 
         bool emailExists = await userRepository.ExistsAsync(u => u.Email == request.Email);
         if (emailExists)
-            return Error.Conflict("Auth.EmailExists", "Email is already registered.");
+            return AuthErrors.EmailExists;
 
         var user = ApplicationUser.Create(
             request.Username,
@@ -66,10 +67,10 @@ public sealed class AuthService : IAuthService
 
         var user = await userRepository.FindAsync(u => u.Username == request.Username);
         if (user is null)
-            return Error.Failure("Auth.InvalidCredentials", "Invalid username or password.");
+            return AuthErrors.InvalidCredentials;
 
         if (!_passwordHasher.Verify(request.password, user.PasswordHash))
-            return Error.Failure("Auth.InvalidCredentials", "Invalid username or password.");
+            return AuthErrors.InvalidCredentials;
 
         var token = _tokenService.GenerateToken(user);
         return Result<AuthResponse>.Success(BuildAuthResponse(user, token));
@@ -82,5 +83,5 @@ public sealed class AuthService : IAuthService
     /// <param name="token">The signed JWT string.</param>
     /// <returns>A populated <see cref="AuthResponse"/>.</returns>
     private static AuthResponse BuildAuthResponse(ApplicationUser user, string token) =>
-        new(token, user.Username, user.Role, DateTime.UtcNow.AddHours(8));
+        new(token, user.Username, user.Role.ToString(), DateTime.UtcNow.AddHours(8));
 }

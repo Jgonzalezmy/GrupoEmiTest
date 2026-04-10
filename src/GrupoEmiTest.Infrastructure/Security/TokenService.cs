@@ -33,7 +33,7 @@ public sealed class TokenService : ITokenService
         string secret = jwtSection["Secret"]!;
         string issuer = jwtSection["Issuer"]!;
         string audience = jwtSection["Audience"]!;
-        int expiryHours = int.Parse(jwtSection["ExpiryHours"] ?? "8");
+        int expiryHours = int.Parse(jwtSection["ExpiryHours"]!);
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -41,9 +41,9 @@ public sealed class TokenService : ITokenService
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
+            new Claim(JwtRegisteredClaimNames.Name, user.Username),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role),
+            new Claim(ClaimTypes.Role, user.Role.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

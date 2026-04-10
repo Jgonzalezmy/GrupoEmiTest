@@ -34,6 +34,12 @@ public partial class GrupoEmiTestDBContext : DbContext
     public virtual DbSet<Employee> Employee { get; set; }
 
     /// <summary>
+    /// Gets or sets the <see cref="DbSet{TEntity}"/> for the <see cref="ApplicationUser"/> entity.
+    /// Provides CRUD access to the <c>Users</c> table in the database.
+    /// </summary>
+    public virtual DbSet<ApplicationUser> User { get; set; }
+
+    /// <summary>
     /// Configures the database provider and connection string when no options have been
     /// injected via the constructor. This serves as a fallback for scenarios such as
     /// design-time tooling or direct instantiation without a DI container.

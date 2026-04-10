@@ -18,7 +18,7 @@ public sealed class DataSeeder(GrupoEmiTestDBContext context)
     {
         await context.Database.MigrateAsync();
 
-        if (context.Employee.Any())
+        if (await context.Employee.AnyAsync())
             return;
 
         var departments = BuildDepartments();

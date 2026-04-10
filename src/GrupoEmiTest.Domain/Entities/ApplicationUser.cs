@@ -1,4 +1,6 @@
-﻿namespace GrupoEmiTest.Domain.Entities;
+﻿using GrupoEmiTest.Domain.Enums;
+
+namespace GrupoEmiTest.Domain.Entities;
 
 /// <summary>
 /// Represents an application user with authentication credentials and an assigned role.
@@ -21,7 +23,7 @@ public class ApplicationUser
     /// Gets or sets the role assigned to the user.
     /// Valid values are <c>"Admin"</c> and <c>"User"</c>.
     /// </summary>
-    public string Role { get; set; } = "User";
+    public RoleType Role { get; set; } = RoleType.User;
 
     /// <summary>
     /// Creates a new <see cref="ApplicationUser"/> with the specified credentials and role.
@@ -29,9 +31,9 @@ public class ApplicationUser
     /// <param name="username">The username used for login.</param>
     /// <param name="email">The email address of the user.</param>
     /// <param name="passwordHash">The already-hashed password.</param>
-    /// <param name="role">The role assigned to the user. Defaults to <c>"User"</c>.</param>
+    /// <param name="role">The role assigned to the user. Defaults to <see cref="RoleType.User"/>.</param>
     /// <returns>A new <see cref="ApplicationUser"/> instance.</returns>
-    public static ApplicationUser Create(string username, string email, string passwordHash, string role = "User") =>
+    public static ApplicationUser Create(string username, string email, string passwordHash, RoleType role = RoleType.User) =>
         new()
         {
             Username = username,
