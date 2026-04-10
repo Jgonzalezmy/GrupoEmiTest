@@ -1,7 +1,7 @@
 ﻿using GrupoEmiTest.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace GrupoEmiTest.Infrastructure.Persistence;
+namespace GrupoEmiTest.Infrastructure;
 
 /// <summary>
 /// Represents the Entity Framework Core database context for the GrupoEmiTest application.

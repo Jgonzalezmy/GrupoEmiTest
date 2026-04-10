@@ -1,6 +1,7 @@
 ﻿using GrupoEmiTest.Application.Interfaces;
+using GrupoEmiTest.Application.Settings;
 using GrupoEmiTest.Domain.Interfaces;
-using GrupoEmiTest.Infrastructure.Persistence;
+using GrupoEmiTest.Infrastructure.Data;
 using GrupoEmiTest.Infrastructure.Repositories;
 using GrupoEmiTest.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,8 @@ public static class DependencyInjectionInfrastructure
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
+
         var conectionString = configuration.GetConnectionString("SqlServer");
         services.AddDbContext<GrupoEmiTestDBContext>(options =>
             options.UseSqlServer(conectionString));

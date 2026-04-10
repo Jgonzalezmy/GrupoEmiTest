@@ -1,7 +1,6 @@
 ﻿using GrupoEmiTest.Domain.Common;
 using GrupoEmiTest.Domain.Entities;
 using GrupoEmiTest.Domain.Interfaces;
-using GrupoEmiTest.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace GrupoEmiTest.Infrastructure.UnitOfWork;

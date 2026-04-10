@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using GrupoEmiTest.Application.DTOs.Request;
+using GrupoEmiTest.Domain.Enums;
 
 namespace GrupoEmiTest.API.Validators;
 
@@ -33,6 +34,7 @@ public class RegisterValidator : AbstractValidator<RegisterRequest>
         RuleFor(x => x.Role)
             .NotEmpty()
             .NotNull()
-            .IsInEnum();
+            .IsInEnum()
+            .WithMessage($"Role must be one of the following values: {string.Join(", ", Enum.GetNames<RoleType>())}.");
     }
 }

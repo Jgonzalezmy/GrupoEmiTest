@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using GrupoEmiTest.Application.DTOs.Request;
+using GrupoEmiTest.Domain.Enums;
 
 namespace GrupoEmiTest.API.Validators;
 
@@ -20,7 +21,8 @@ public class EmployeeValidator : AbstractValidator<EmployeeRequest>
             .MaximumLength(200);
 
         RuleFor(x => x.CurrentPosition)
-            .IsInEnum();
+            .IsInEnum()
+            .WithMessage($"Current position must be one of the following values: {string.Join(", ", Enum.GetNames<PositionType>())}.");
 
         RuleFor(x => x.Salary)
             .GreaterThan(0);

@@ -3,7 +3,7 @@ using GrupoEmiTest.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace GrupoEmiTest.Infrastructure.Persistence;
+namespace GrupoEmiTest.Infrastructure.Data;
 
 /// <summary>
 /// Handles initial data seeding for the application database.

@@ -1,8 +1,6 @@
 ﻿using GrupoEmiTest.Domain.Common;
 using GrupoEmiTest.Domain.Entities;
 using GrupoEmiTest.Domain.Interfaces;
-using GrupoEmiTest.Infrastructure.Data;
-using GrupoEmiTest.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrupoEmiTest.Infrastructure.Repositories;

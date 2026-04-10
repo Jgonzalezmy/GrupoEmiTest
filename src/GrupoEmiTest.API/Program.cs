@@ -1,4 +1,4 @@
-
+using GrupoEmiTest.API.Middleware.Extensions;
 using GrupoEmiTest.Application;
 using GrupoEmiTest.Infrastructure;
 using GrupoEmiTest.Infrastructure.Extensions;
@@ -19,9 +19,6 @@ public class Program
 
         var app = builder.Build();
 
-        await app.InitialiseDatabaseAsync();
-
-        // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
@@ -31,8 +28,10 @@ public class Program
         if (!app.Environment.IsDevelopment())
             app.UseHttpsRedirection();
 
+        await app.InitialiseDatabaseAsync();
+        app.UseRequestLogging();
+        app.UseAuthentication();
         app.UseAuthorization();
-
         app.MapControllers();
 
         app.Run();

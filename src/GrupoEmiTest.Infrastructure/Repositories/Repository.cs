@@ -1,5 +1,4 @@
 ﻿using GrupoEmiTest.Domain.Interfaces;
-using GrupoEmiTest.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 

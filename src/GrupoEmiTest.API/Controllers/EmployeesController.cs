@@ -1,6 +1,8 @@
+using GrupoEmiTest.API.Policies;
 using GrupoEmiTest.Application.DTOs.Request;
 using GrupoEmiTest.Application.Interfaces;
 using GrupoEmiTest.Domain.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrupoEmiTest.API.Controllers;
@@ -11,6 +13,7 @@ namespace GrupoEmiTest.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
+[Authorize(Policy = PolicyConstants.ReadPolicy)]
 public sealed class EmployeesController : ControllerBase
 {
     private readonly IEmployeeService _employeeService;
@@ -36,6 +39,8 @@ public sealed class EmployeesController : ControllerBase
     /// </returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetAll(
         [FromQuery] int? cursor,
         [FromQuery] int pageSize = 10,
@@ -59,6 +64,8 @@ public sealed class EmployeesController : ControllerBase
     /// </returns>
     [HttpGet("{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] IdRequest idRequest, CancellationToken cancellationToken = default)
     {
@@ -80,8 +87,11 @@ public sealed class EmployeesController : ControllerBase
     /// <c>400 Bad Request</c> if validation fails.
     /// </returns>
     [HttpPost]
+    [Authorize(Policy = PolicyConstants.WritePolicy)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Create([FromBody] EmployeeRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _employeeService.CreateAsync(request);
@@ -104,8 +114,11 @@ public sealed class EmployeesController : ControllerBase
     /// <c>404 Not Found</c> if the employee does not exist.
     /// </returns>
     [HttpPut("{id:int}")]
+    [Authorize(Policy = PolicyConstants.EditPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update([FromRoute] IdRequest idRequest, [FromBody] EmployeeRequest request, CancellationToken cancellationToken = default)
     {
@@ -137,8 +150,11 @@ public sealed class EmployeesController : ControllerBase
     /// <c>400 Bad Request</c> if <paramref name="departmentIdRequest"/> is invalid.
     /// </returns>
     [HttpGet("by-department/{id:int}")]
+    [Authorize(Policy = PolicyConstants.ReadPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetByDepartment(
         [FromRoute] IdRequest departmentIdRequest,
         [FromQuery] int? cursor,
@@ -163,7 +179,10 @@ public sealed class EmployeesController : ControllerBase
     /// <c>404 Not Found</c> if the employee does not exist.
     /// </returns>
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = PolicyConstants.DeletePolicy)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete([FromRoute] IdRequest idRequest, CancellationToken cancellationToken = default)
     {

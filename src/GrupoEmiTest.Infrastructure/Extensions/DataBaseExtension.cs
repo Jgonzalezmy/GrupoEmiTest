@@ -1,4 +1,4 @@
-﻿using GrupoEmiTest.Infrastructure.Persistence;
+﻿using GrupoEmiTest.Infrastructure.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
