@@ -1,4 +1,5 @@
-﻿using GrupoEmiTest.Domain.Enums;
+﻿using GrupoEmiTest.Domain.Entities;
+using GrupoEmiTest.Domain.Enums;
 
 namespace GrupoEmiTest.Application.DTOs.Request;
 

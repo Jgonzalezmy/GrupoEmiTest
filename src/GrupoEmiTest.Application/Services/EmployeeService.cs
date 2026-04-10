@@ -4,9 +4,8 @@ using GrupoEmiTest.Application.Extensions;
 using GrupoEmiTest.Application.Interfaces;
 using GrupoEmiTest.Domain.Common;
 using GrupoEmiTest.Domain.Entities;
-using GrupoEmiTest.Domain.Enums;
+using GrupoEmiTest.Domain.Errors;
 using GrupoEmiTest.Domain.Interfaces;
-
 namespace GrupoEmiTest.Application.Services;
 
 /// <summary>
@@ -47,27 +46,41 @@ public sealed class EmployeeService : IEmployeeService
         var employee = await _unitOfWork.Employees.GetByIdWithDetailsAsync(id);
 
         if (employee is null)
-            return Result.Failure<EmployeeResponse>(
-                new Error("Employee.NotFound", $"Employee with ID {id} was not found.", ErrorType.NotFound));
+            return EmployeeErrors.NotFound();
 
-        return Result.Success(employee.ToResponse());
+        return employee.ToResponse();
     }
 
     /// <inheritdoc/>
     public async Task<Result<EmployeeResponse>> CreateAsync(EmployeeRequest request)
     {
-        var employee = new Employee
+        var employeeResult = Employee.Create(
+            name: request.Name,
+            position: request.CurrentPosition,
+            salary: request.Salary,
+            departmentId: request.DepartmentId);
+
+        if (employeeResult.IsFailure)
+            return employeeResult.Error;
+
+        return await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
-            Name = request.Name,
-            CurrentPosition = request.CurrentPosition,
-            Salary = request.Salary,
-            DepartmentId = request.DepartmentId
-        };
+            await _unitOfWork.Employees.AddAsync(employeeResult.Value);
+            await _unitOfWork.SaveChangesAsync();
 
-        await _unitOfWork.Employees.AddAsync(employee);
-        await _unitOfWork.SaveChangesAsync();
+            var historyResult = PositionHistory.Create(
+                employeeId: employeeResult.Value.Id,
+                position: request.CurrentPosition,
+                startDate: DateTime.UtcNow);
 
-        return Result.Success(employee.ToResponse());
+            if (historyResult.IsFailure)
+                return historyResult.Error;
+
+            await _unitOfWork.PositionHistories.AddAsync(historyResult.Value);
+            await _unitOfWork.SaveChangesAsync();
+
+            return Result.Success(employeeResult.Value.ToResponse());
+        });
     }
 
     /// <inheritdoc/>
@@ -76,18 +89,54 @@ public sealed class EmployeeService : IEmployeeService
         var employee = await _unitOfWork.Employees.GetByIdWithDetailsAsync(id);
 
         if (employee is null)
-            return Result.Failure<EmployeeResponse>(
-                new Error("Employee.NotFound", $"Employee with ID {id} was not found.", ErrorType.NotFound));
+            return EmployeeErrors.NotFound(id);
 
-        employee.Name = request.Name;
-        employee.CurrentPosition = request.CurrentPosition;
-        employee.Salary = request.Salary;
-        employee.DepartmentId = request.DepartmentId;
+        bool positionChanged = employee.CurrentPosition != request.CurrentPosition;
 
-        _unitOfWork.Employees.Update(employee);
-        await _unitOfWork.SaveChangesAsync();
+        var updateResult = employee.Update(
+            name: request.Name,
+            position: request.CurrentPosition,
+            salary: request.Salary,
+            departmentId: request.DepartmentId);
 
-        return Result.Success(employee.ToResponse());
+        if (updateResult.IsFailure)
+            return updateResult.Error;
+
+        if (!positionChanged)
+        {
+            _unitOfWork.Employees.Update(employee);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Success(employee.ToResponse());
+        }
+
+        return await _unitOfWork.ExecuteInTransactionAsync(async () =>
+        {
+            _unitOfWork.Employees.Update(employee);
+            await _unitOfWork.SaveChangesAsync();
+
+            var activeHistory = await _unitOfWork.PositionHistories.GetActiveByEmployeeIdAsync(id);
+            if (activeHistory is not null)
+            {
+                var closeResult = activeHistory.Close(DateTime.UtcNow);
+                if (closeResult.IsFailure)
+                    return closeResult.Error;
+
+                _unitOfWork.PositionHistories.Update(activeHistory);
+            }
+
+            var newHistoryResult = PositionHistory.Create(
+                employeeId: id,
+                position: request.CurrentPosition,
+                startDate: DateTime.UtcNow);
+
+            if (newHistoryResult.IsFailure)
+                return newHistoryResult.Error;
+
+            await _unitOfWork.PositionHistories.AddAsync(newHistoryResult.Value);
+            await _unitOfWork.SaveChangesAsync();
+
+            return Result.Success(employee.ToResponse());
+        });
     }
 
     /// <inheritdoc/>
@@ -96,12 +145,28 @@ public sealed class EmployeeService : IEmployeeService
         var employee = await _unitOfWork.Employees.GetByIdAsync(id);
 
         if (employee is null)
-            return Result.Failure(
-                new Error("Employee.NotFound", $"Employee with ID {id} was not found.", ErrorType.NotFound));
+            return EmployeeErrors.NotFound(id);
 
         _unitOfWork.Employees.Delete(employee);
         await _unitOfWork.SaveChangesAsync();
 
         return Result.Success();
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<PagedResult<EmployeeResponse>>> GetByDepartmentWithProjectsAsync(
+        int departmentId,
+        PageRequest request,
+        CancellationToken cancellationToken)
+    {
+        var page = await _unitOfWork.Employees
+            .GetByDepartmentWithProjectsAsync(departmentId, request, cancellationToken);
+
+        IReadOnlyList<EmployeeResponse> data = page.Data
+            .Select(e => e.ToResponse())
+            .ToList()
+            .AsReadOnly();
+
+        return Result.Success(new PagedResult<EmployeeResponse>(data, page.NextCursor, page.HasNextPage));
     }
 }

@@ -1,4 +1,6 @@
-﻿using GrupoEmiTest.Domain.Enums;
+﻿using GrupoEmiTest.Domain.Common;
+using GrupoEmiTest.Domain.Enums;
+using GrupoEmiTest.Domain.Errors;
 using GrupoEmiTest.Domain.Extensions;
 
 namespace GrupoEmiTest.Domain.Entities;
@@ -26,7 +28,6 @@ public class Employee
     public int DepartmentId { get; set; }
 
 
-    // Navigation properties 
     /// <summary>Gets or sets the department this employee belongs to.</summary>
     public Department Department { get; set; } = null!;
 
@@ -45,4 +46,62 @@ public class Employee
     /// <returns>The calculated yearly bonus amount.</returns>
     public decimal CalculateYearlyBonus()
         => CurrentPosition.IsManagerPosition() ? Salary * 0.20m : Salary * 0.10m;
+
+    /// <summary>
+    /// Factory method that creates a new <see cref="Employee"/> after validating the input.
+    /// </summary>
+    /// <param name="name">Full name of the employee.</param>
+    /// <param name="position">Initial position type.</param>
+    /// <param name="salary">Monthly salary — must be greater than zero.</param>
+    /// <param name="departmentId">Identifier of the department the employee belongs to.</param>
+    /// <returns>
+    /// A successful <see cref="Result{Employee}"/> with the new instance,
+    /// or a failure result with a validation error.
+    /// </returns>
+    public static Result<Employee> Create(string name, PositionType position, decimal salary, int departmentId)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return EmployeeErrors.NameEmpty;
+
+        if (salary <= 0)
+            return EmployeeErrors.InvalidSalary;
+
+        if (departmentId <= 0)
+            return EmployeeErrors.InvalidDepartmentId;
+
+        return new Employee
+        {
+            Name = name.Trim(),
+            CurrentPosition = position,
+            Salary = salary,
+            DepartmentId = departmentId
+        };
+    }
+
+    /// <summary>
+    /// Updates the employee's mutable fields after validating the input.
+    /// </summary>
+    /// <param name="name">New full name — cannot be empty.</param>
+    /// <param name="position">New position type.</param>
+    /// <param name="salary">New monthly salary — must be greater than zero.</param>
+    /// <param name="departmentId">New department identifier.</param>
+    /// <returns>
+    /// <see cref="Result.Success()"/> when the update is applied,
+    /// or a failure result with a validation error.
+    /// </returns>
+    public Result Update(string name, PositionType position, decimal salary, int departmentId)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return EmployeeErrors.NameEmpty;
+
+        if (salary <= 0)
+            return EmployeeErrors.InvalidSalary;
+
+        Name = name.Trim();
+        CurrentPosition = position;
+        Salary = salary;
+        DepartmentId = departmentId;
+
+        return Result.Success();
+    }
 }

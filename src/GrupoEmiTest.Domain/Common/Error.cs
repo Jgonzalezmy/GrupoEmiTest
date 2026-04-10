@@ -90,5 +90,14 @@ namespace GrupoEmiTest.Domain.Common
         /// <returns>A new <see cref="Error"/> instance with <see cref="ErrorType.Conflict"/>.</returns>
         public static Error Conflict(string code, string description) =>
             new(code, description, ErrorType.Conflict);
+
+        /// <summary>
+        /// Creates a new <see cref="Error"/> of type <see cref="ErrorType.Validation"/>.
+        /// </summary>
+        /// <param name="code">A unique code identifying the error.</param>
+        /// <param name="description">A human-readable description of the error.</param>
+        /// <returns>A new <see cref="Error"/> instance with <see cref="ErrorType.Validation"/>.</returns>
+        public static Error Validation(string code, string description) =>
+            new(code, description, ErrorType.Validation);
     }
 }

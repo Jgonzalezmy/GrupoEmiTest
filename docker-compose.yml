@@ -1,0 +1,6 @@
+services:
+  grupoemitest.api:
+    image: ${DOCKER_REGISTRY-}grupoemitestapi
+    build:
+      context: .
+      dockerfile: src/GrupoEmiTest.API/Dockerfile

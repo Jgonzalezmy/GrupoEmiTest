@@ -2,6 +2,7 @@
 using GrupoEmiTest.Domain.Entities;
 using GrupoEmiTest.Domain.Interfaces;
 using GrupoEmiTest.Infrastructure.Data;
+using GrupoEmiTest.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrupoEmiTest.Infrastructure.Repositories;
@@ -38,11 +39,42 @@ public sealed class EmployeeRepository : Repository<Employee>, IEmployeeReposito
         // without a separate COUNT(*) round-trip.
         var items = await _dbSet
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(e => e.Department)
             .Include(e => e.PositionHistories)
             .Include(e => e.EmployeeProjects)
                 .ThenInclude(ep => ep.Project)
             .Where(e => request.LastId == null || e.Id > request.LastId)
+            .OrderBy(e => e.Id)
+            .Take(request.PageSize + 1)
+            .ToListAsync(cancellationToken);
+
+        var hasNextPage = items.Count > request.PageSize;
+
+        if (hasNextPage)
+            items.RemoveAt(items.Count - 1);
+
+        var nextCursor = hasNextPage ? items[^1].Id : (int?)null;
+
+        return new PagedResult<Employee>(items, nextCursor, hasNextPage);
+    }
+
+    /// <inheritdoc/>
+    public async Task<PagedResult<Employee>> GetByDepartmentWithProjectsAsync(
+        int departmentId,
+        PageRequest request,
+        CancellationToken cancellationToken)
+    {
+        var items = await _dbSet
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(e => e.Department)
+            .Include(e => e.PositionHistories)
+            .Include(e => e.EmployeeProjects)
+                .ThenInclude(ep => ep.Project)
+            .Where(e => e.DepartmentId == departmentId
+                     && e.EmployeeProjects.Any()
+                     && (request.LastId == null || e.Id > request.LastId))
             .OrderBy(e => e.Id)
             .Take(request.PageSize + 1)
             .ToListAsync(cancellationToken);

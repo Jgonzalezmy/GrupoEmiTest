@@ -1,34 +1,40 @@
 
-namespace GrupoEmiTest.API
+using GrupoEmiTest.Application;
+using GrupoEmiTest.Infrastructure;
+using GrupoEmiTest.Infrastructure.Extensions;
+using Scalar.AspNetCore;
+
+namespace GrupoEmiTest.API;
+
+public class Program
 {
-    public class Program
+    public static async Task Main(string[] args)
     {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+        var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+        builder.Services
+            .AddAPIServices(builder.Configuration)
+            .AddApplicationServices()
+            .AddInfrastructureServices(builder.Configuration);
 
-            builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
+        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+        builder.Services.AddOpenApi();
 
-            var app = builder.Build();
+        var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.MapOpenApi();
-            }
+        await app.InitialiseDatabaseAsync();
 
-            app.UseHttpsRedirection();
+        // Configure the HTTP request pipeline.
+        if (app.Environment.IsDevelopment())        
+            app.MapOpenApi();
 
-            app.UseAuthorization();
+        app.MapScalarApiReference();
+        app.UseHttpsRedirection();
 
+        app.UseAuthorization();
 
-            app.MapControllers();
+        app.MapControllers();
 
-            app.Run();
-        }
+        app.Run();
     }
 }

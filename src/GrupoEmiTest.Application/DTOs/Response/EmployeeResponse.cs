@@ -17,6 +17,7 @@ public record EmployeeResponse(
     int Id,
     string Name,
     PositionType CurrentPosition,
+    string CurrentPositionDescription,
     string DepartmentName,
     decimal Salary,
     decimal YearlyBonus,

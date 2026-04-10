@@ -1,7 +1,7 @@
 ﻿using GrupoEmiTest.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace GrupoEmiTest.Infrastructure;
+namespace GrupoEmiTest.Infrastructure.Persistence;
 
 /// <summary>
 /// Represents the Entity Framework Core database context for the GrupoEmiTest application.
@@ -47,7 +47,7 @@ public partial class GrupoEmiTestDBContext : DbContext
         if (!optionsBuilder.IsConfigured)
         {
             // Fallback: configure via connection string if no options were injected
-            optionsBuilder.UseSqlServer("Name=ConnectionStrings:DefaultConnection");
+            optionsBuilder.UseSqlServer("Name=ConnectionStrings:SqlServer");
         }
     }
 

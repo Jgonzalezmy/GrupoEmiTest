@@ -45,4 +45,17 @@ public interface IEmployeeService
     /// <param name="id">The employee's primary key.</param>
     /// <returns>A result indicating success, or a not-found failure.</returns>
     Task<Result> DeleteAsync(int id);
+
+    /// <summary>
+    /// Retrieves a keyset-paginated page of employees that belong to the specified department
+    /// and are assigned to at least one project.
+    /// </summary>
+    /// <param name="departmentId">The identifier of the department to filter by.</param>
+    /// <param name="request">The pagination parameters (page size and optional last-seen ID cursor).</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>
+    /// A result containing a <see cref="PagedResult{T}"/> with the current page and next-cursor,
+    /// or an empty page when no employees satisfy both conditions.
+    /// </returns>
+    Task<Result<PagedResult<EmployeeResponse>>> GetByDepartmentWithProjectsAsync(int departmentId, PageRequest request, CancellationToken cancellationToken);
 }

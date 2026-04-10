@@ -13,9 +13,6 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["src/GrupoEmiTest.API/GrupoEmiTest.API.csproj", "src/GrupoEmiTest.API/"]
-COPY ["src/GrupoEmiTest.Application/GrupoEmiTest.Application.csproj", "src/GrupoEmiTest.Application/"]
-COPY ["src/GrupoEmiTest.Domain/GrupoEmiTest.Domain.csproj", "src/GrupoEmiTest.Domain/"]
-COPY ["src/GrupoEmiTest.Infrastructure/GrupoEmiTest.Infrastructure.csproj", "src/GrupoEmiTest.Infrastructure/"]
 RUN dotnet restore "./src/GrupoEmiTest.API/GrupoEmiTest.API.csproj"
 COPY . .
 WORKDIR "/src/src/GrupoEmiTest.API"

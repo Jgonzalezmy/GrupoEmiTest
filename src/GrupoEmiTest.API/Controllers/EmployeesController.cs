@@ -60,9 +60,9 @@ public sealed class EmployeesController : ControllerBase
     [HttpGet("{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetById([FromRoute] IdRequest idRequest, CancellationToken cancellationToken = default)
     {
-        var result = await _employeeService.GetByIdAsync(id);
+        var result = await _employeeService.GetByIdAsync(idRequest.Id);
 
         if (result.IsFailure)
             return NotFound(new { error = result.Error });
@@ -107,9 +107,11 @@ public sealed class EmployeesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Update(int id, [FromBody] EmployeeRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Update([FromRoute] IdRequest idRequest, [FromBody] EmployeeRequest request, CancellationToken cancellationToken = default)
     {
-        var result = await _employeeService.UpdateAsync(id, request);
+        var result = await _employeeService.UpdateAsync(
+            id: idRequest.Id,
+            request: request);
 
         if (result.IsFailure)
         {
@@ -117,6 +119,36 @@ public sealed class EmployeesController : ControllerBase
                 ? NotFound(new { error = result.Error })
                 : BadRequest(new { error = result.Error });
         }
+
+        return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Returns a keyset-paginated page of employees that belong to the specified department
+    /// and are assigned to at least one project.
+    /// Pass the <c>cursor</c> value from the previous response to advance to the next page.
+    /// </summary>
+    /// <param name="departmentIdRequest">The department's primary key.</param>
+    /// <param name="cursor">The ID of the last employee seen. Omit or pass <c>null</c> for the first page.</param>
+    /// <param name="pageSize">Number of employees per page (default: 10).</param>
+    /// <param name="cancellationToken">Propagated by the framework when the client disconnects.</param>
+    /// <returns>
+    /// <c>200 OK</c> with a <see cref="PagedResult{T}"/> containing employees and pagination metadata.<br/>
+    /// <c>400 Bad Request</c> if <paramref name="departmentIdRequest"/> is invalid.
+    /// </returns>
+    [HttpGet("by-department/{departmentId:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetByDepartment(
+        [FromRoute] IdRequest departmentIdRequest,
+        [FromQuery] int? cursor,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _employeeService.GetByDepartmentWithProjectsAsync(
+            departmentId: departmentIdRequest.Id,
+            request: new PageRequest(pageSize, cursor),
+            cancellationToken: cancellationToken);
 
         return Ok(result.Value);
     }
@@ -133,13 +165,15 @@ public sealed class EmployeesController : ControllerBase
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Delete([FromRoute] IdRequest idRequest, CancellationToken cancellationToken = default)
     {
-        var result = await _employeeService.DeleteAsync(id);
+        var result = await _employeeService.DeleteAsync(idRequest.Id);
 
         if (result.IsFailure)
             return NotFound(new { error = result.Error });
 
         return NoContent();
     }
+
+
 }

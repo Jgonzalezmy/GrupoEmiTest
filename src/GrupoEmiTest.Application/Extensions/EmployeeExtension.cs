@@ -21,6 +21,7 @@ namespace GrupoEmiTest.Application.Extensions
                 Id: employee.Id,
                 Name: employee.Name,
                 CurrentPosition: employee.CurrentPosition,
+                CurrentPositionDescription: employee.CurrentPosition.ToString(),
                 DepartmentName: employee.Department?.Name ?? string.Empty,
                 Salary: employee.Salary,
                 YearlyBonus: employee.CalculateYearlyBonus(),

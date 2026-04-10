@@ -30,8 +30,11 @@ public sealed class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .IsRequired()
             .HasColumnType("decimal(18,2)");
 
-        builder.HasIndex(x => x.Name)
+        builder.HasIndex(e => e.Name)
             .HasDatabaseName("IX_Employees_Name");
+
+        builder.HasIndex(e => e.DepartmentId)
+            .HasDatabaseName("IX_Employees_DepartmentId");
 
         // Employee → Department (many-to-one)
         builder.HasOne(e => e.Department)
@@ -39,10 +42,5 @@ public sealed class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .HasForeignKey(e => e.DepartmentId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Employee → EmployeeProject (one-to-many side of the M:N)
-        builder.HasMany(e => e.EmployeeProjects)
-            .WithOne(ep => ep.Employee)
-            .HasForeignKey(ep => ep.EmployeeId)
-            .OnDelete(DeleteBehavior.Cascade);
-    }
+        }
 }
